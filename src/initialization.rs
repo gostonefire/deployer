@@ -1,0 +1,88 @@
+use std::{env, fs};
+use log::LevelFilter;
+use serde::Deserialize;
+use thiserror::Error;
+use crate::logging::{setup_logger, LoggerError};
+use crate::manager_mail::{Mail, MailError};
+
+#[derive(Deserialize)]
+pub struct WebServerParameters {
+    pub bind_address: String,
+    pub bind_port: u16,
+    pub tls_private_key: String,
+    pub tls_chain_cert: String,
+}
+
+#[derive(Deserialize)]
+pub struct MailParameters {
+    pub smtp_user: String,
+    pub smtp_password: String,
+    pub smtp_endpoint: String,
+    pub from: String,
+    pub to: String,
+}
+
+#[derive(Deserialize)]
+pub struct General {
+    pub develop_path: String,
+    pub log_path: String,
+    pub log_level: LevelFilter,
+    pub log_to_stdout: bool,
+}
+
+#[derive(Deserialize)]
+pub struct Config {
+    pub web_server: WebServerParameters,
+    pub mail: MailParameters,
+    pub general: General,
+}
+
+/// Returns a configuration struct for the application and starts logging
+///
+pub fn config() -> Result<(Config, Mail), InitializationError> {
+    let args: Vec<String> = env::args().collect();
+    let config_path = args.iter()
+        .find(|p| p.starts_with("--config="))
+        .ok_or(InitializationError::ConfigFilePathError("missing --config=<config_path>".to_string()))?;
+    let config_path = config_path
+        .split_once('=')
+        .ok_or(InitializationError::ConfigFilePathError("invalid --config=<config_path>".to_string()))?
+        .1;
+    
+    let config = load_config(&config_path)?;
+
+    setup_logger(&config.general.log_path, config.general.log_level, config.general.log_to_stdout)?;
+    
+    let mail = Mail::new(&config.mail)?;
+    
+    Ok((config, mail))
+}
+
+/// Loads the configuration file and returns a struct with all configuration items
+///
+/// # Arguments
+///
+/// * 'config_path' - path to the config file
+fn load_config(config_path: &str) -> Result<Config, InitializationError> {
+
+    let toml = fs::read_to_string(config_path)?;
+    let config: Config = toml::from_str(&toml)?;
+
+    Ok(config)
+}
+
+/// Error depicting errors that occur while initializing the scheduler
+///
+#[derive(Debug, Error)]
+pub enum InitializationError {
+    #[error("FileIOError: {0}")]
+    FileIOError(#[from] std::io::Error),
+    #[error("ConfigFileError: {0}")]
+    ConfigFileError(#[from] toml::de::Error),
+    #[error("ConfigurationError: {0}")]
+    ConfigFilePathError(String),
+    #[error("SetupLoggerError: {0}")]
+    SetupLoggerError(#[from] LoggerError),
+    #[error("MailSetupError: {0}")]
+    MailSetupError(#[from] MailError),
+}
