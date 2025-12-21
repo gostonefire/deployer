@@ -5,7 +5,6 @@ use thiserror::Error;
 use anyhow::Result;
 use axum::Router;
 use axum::routing::post;
-use axum_server::tls_rustls::RustlsConfig;
 use log::info;
 use tokio::sync::RwLock;
 use crate::handlers::github_webhook;
@@ -51,10 +50,7 @@ async fn main() -> Result<(), UnrecoverableError> {
     let ip_addr = Ipv4Addr::from_str(&config.web_server.bind_address).expect("invalid BIND_ADDR");
     let addr = SocketAddr::new(IpAddr::V4(ip_addr), config.web_server.bind_port);
 
-    let rustls_config = RustlsConfig::from_pem_file(&config.web_server.tls_chain_cert, &config.web_server.tls_private_key)
-        .await?;
-
-    axum_server::bind_rustls(addr, rustls_config)
+    axum_server::bind(addr)
         .serve(app.into_make_service())
         .await?;
 

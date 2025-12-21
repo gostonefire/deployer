@@ -29,6 +29,9 @@ struct Repository {
 }
 
 pub async fn github_webhook(State(state): State<AppState>, headers: HeaderMap, body: Bytes) -> impl IntoResponse {
+    dbg!(&headers);
+    dbg!(&body);
+    
     // 1) Verify event type
     let event = headers
         .get("X-GitHub-Event")
