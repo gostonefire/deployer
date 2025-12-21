@@ -22,7 +22,7 @@ struct AppState {
     mail: Arc<RwLock<Mail>>,
     webhook_secret: String,
     expected_repo_full_name: Vec<String>, // e.g. "yourorg/yourrepo"
-    deploy_script_path: String,       // e.g. "/opt/deploy/deploy.sh"
+    deploy_script_path: String,       // e.g. "/opt/deploy/master_deploy.sh"
 }
 
 #[tokio::main]

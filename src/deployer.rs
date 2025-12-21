@@ -7,7 +7,10 @@ use tokio::sync::RwLock;
 use crate::manager_mail::Mail;
 
 pub async fn run_deploy(script_path: String, repo: String, tag: String, mail: Arc<RwLock<Mail>>) {
-    let (subject, body) = match deploy_mock(&script_path, &repo, &tag).await {
+    let repo_name = repo.rsplit_once('/').map(|(_, name)| name).unwrap_or(&repo);
+    let full_path = format!("{}/{}", script_path, repo_name);
+    
+    let (subject, body) = match deploy_mock(&full_path, &tag).await {
         Ok(result) => 
             (
                 "Deploy successful".to_string(),
@@ -24,10 +27,10 @@ pub async fn run_deploy(script_path: String, repo: String, tag: String, mail: Ar
     let _ = mail.read().await.send_mail(subject, body);
 }
 
-async fn deploy_mock(script_path: &str, repo: &str, tag: &str) -> Result<String, DeployError> {
-    info!("mock deploy of {} for {} using {}", tag, repo, script_path);
+async fn deploy_mock(full_path: &str, tag: &str) -> Result<String, DeployError> {
+    info!("running script {} for tag {}", full_path, tag);
     
-    Ok(format!("mock deploy result for {}-{}", repo, tag))
+    Ok(format!("mock deploy result for {}-{}", full_path, tag))
 }
 
 async fn deploy(script_path: &str, tag: &str) -> Result<String, DeployError> {
