@@ -8,10 +8,9 @@ use crate::manager_mail::Mail;
 
 pub async fn run_deploy(script_path: String, repo: String, tag: String, mail: Arc<RwLock<Mail>>) {
     let repo_name = repo.rsplit_once('/').map(|(_, name)| name).unwrap_or(&repo);
-    let full_path = format!("{}/{}", script_path, repo_name);
-    
-    let (subject, body) = match deploy_mock(&full_path, &tag).await {
-        Ok(result) => 
+
+    let (subject, body) = match deploy(&script_path, repo_name, &tag).await {
+        Ok(result) =>
             (
                 "Deploy successful".to_string(),
                 format!("Deploy of {} for {} successful: {}", tag, repo, result),
@@ -27,13 +26,8 @@ pub async fn run_deploy(script_path: String, repo: String, tag: String, mail: Ar
     let _ = mail.read().await.send_mail(subject, body);
 }
 
-async fn deploy_mock(full_path: &str, tag: &str) -> Result<String, DeployError> {
-    info!("running script {} for tag {}", full_path, tag);
-    
-    Ok(format!("mock deploy result for {}-{}", full_path, tag))
-}
 
-async fn deploy(script_path: &str, tag: &str) -> Result<String, DeployError> {
+async fn deploy(script_path: &str, repo_name: &str, tag: &str) -> Result<String, DeployError> {
     // If you want a simple concurrency guard:
     // use `flock` (recommended on Linux) by invoking it here.
     //
@@ -43,6 +37,7 @@ async fn deploy(script_path: &str, tag: &str) -> Result<String, DeployError> {
     //   .arg(script_path).arg(tag) ...
 
     let out = Command::new(script_path)
+        .arg(repo_name)
         .arg(tag)
         .output()
         .await?;
