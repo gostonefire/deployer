@@ -8,6 +8,7 @@ use log::{error, info};
 use serde::Deserialize;
 use sha2::Sha256;
 use crate::AppState;
+use crate::deployer::run_deploy;
 
 type HmacSha256 = Hmac<Sha256>;
 
@@ -58,11 +59,8 @@ pub async fn github_webhook(State(state): State<AppState>, headers: HeaderMap, b
     };
 
     // 4) Validate repo (recommended)
-    if payload.repository.full_name != state.expected_repo_full_name {
-        error!(
-            "repo mismatch: got={}, expected={}",
-            payload.repository.full_name, state.expected_repo_full_name
-        );
+    if !state.expected_repo_full_name.contains(&payload.repository.full_name) {
+        error!("repo not ok for auto deploy: got={}", payload.repository.full_name);
         return (StatusCode::FORBIDDEN, "repo mismatch").into_response();
     }
 
@@ -77,20 +75,12 @@ pub async fn github_webhook(State(state): State<AppState>, headers: HeaderMap, b
     }
 
     let tag = payload.r#ref[TAG_PREFIX.len()..].to_string();
-    info!("deploy requested for tag: {}", tag);
+    info!("deploy requested for repo: {} with tag: {}", payload.repository.full_name, tag);
 
     // 6) Run deploy script
-    // NOTE: consider adding a lock (see below) to prevent concurrent deploys.
-    match run_deploy(&state.deploy_script_path, &tag).await {
-        Ok(output) => {
-            info!("deploy ok: {}", output);
-            (StatusCode::OK, "deploy triggered").into_response()
-        }
-        Err(e) => {
-            error!("deploy failed: {e}");
-            (StatusCode::INTERNAL_SERVER_ERROR, "deploy failed").into_response()
-        }
-    }
+    tokio::spawn(run_deploy(state.deploy_script_path, payload.repository.full_name, tag.clone(), state.mail.clone()));
+
+    (StatusCode::OK, "deploy triggered").into_response()
 }
 
 fn verify_github_signature(secret: &str, body: &[u8], sig_header: &str) -> bool {

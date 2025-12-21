@@ -23,8 +23,13 @@ pub struct MailParameters {
 }
 
 #[derive(Deserialize)]
+pub struct GitHub {
+    pub webhook_secret: String,
+    pub expected_repo_full_name: Vec<String>,
+    pub deploy_script_path: String,
+}
+#[derive(Deserialize)]
 pub struct General {
-    pub develop_path: String,
     pub log_path: String,
     pub log_level: LevelFilter,
     pub log_to_stdout: bool,
@@ -34,6 +39,7 @@ pub struct General {
 pub struct Config {
     pub web_server: WebServerParameters,
     pub mail: MailParameters,
+    pub github: GitHub,
     pub general: General,
 }
 
