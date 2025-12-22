@@ -28,6 +28,8 @@ pub struct GitHub {
 }
 #[derive(Deserialize)]
 pub struct General {
+    pub dev_dir: String,
+    pub script_log: String,
     pub log_path: String,
     pub log_level: LevelFilter,
     pub log_to_stdout: bool,

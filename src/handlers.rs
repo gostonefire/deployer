@@ -79,7 +79,13 @@ pub async fn github_webhook(State(state): State<AppState>, headers: HeaderMap, b
     info!("deploy requested for repo: {} with tag: {}", payload.repository.full_name, tag);
 
     // 6) Run deploy script
-    tokio::spawn(run_deploy(state.deploy_script_path, payload.repository.full_name, tag.clone(), state.mail.clone()));
+    tokio::spawn(run_deploy(
+        state.deploy_script_path,
+        state.dev_dir,
+        state.script_log,
+        payload.repository.full_name,
+        tag.clone(),
+        state.mail.clone()));
 
     (StatusCode::OK, "deploy triggered").into_response()
 }

@@ -23,6 +23,8 @@ struct AppState {
     webhook_secret: String,
     expected_repo_full_name: Vec<String>, // e.g. "yourorg/yourrepo"
     deploy_script_path: String,       // e.g. "/opt/deploy/master_deploy.sh"
+    dev_dir: String,
+    script_log: String,
 }
 
 #[tokio::main]
@@ -41,6 +43,8 @@ async fn main() -> Result<(), UnrecoverableError> {
         webhook_secret: config.github.webhook_secret.clone(), 
         expected_repo_full_name: config.github.expected_repo_full_name.clone(), 
         deploy_script_path: config.github.deploy_script_path.clone(),
+        dev_dir: config.general.dev_dir.clone(),
+        script_log: config.general.script_log.clone(),
     };
 
     let app = Router::new()
