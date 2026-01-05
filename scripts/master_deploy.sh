@@ -75,7 +75,7 @@ run_as_user() {
 # Export variables so the subshell can see them, then run the function as the owner
 export REPO_NAME VERSION_TAG DEV_DIR MASTER_LOG
 
-sudo -u "$DEV_USER" -E bash -li -c "$(declare -f run_as_user); run_as_user"
+sudo -u "$DEV_USER" -E HOME="/home/$DEV_USER" bash -li -c "$(declare -f run_as_user); run_as_user"
 EXIT_CODE=$?
 if [ $EXIT_CODE -ne 0 ]; then
   exit $EXIT_CODE
