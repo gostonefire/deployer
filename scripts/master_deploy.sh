@@ -12,6 +12,7 @@ fi
 
 # Get the owner of the DEV_DIR
 DEV_USER=$(stat -c '%U' "$DEV_DIR")
+DEV_HOME=$(getent passwd "$DEV_USER" | cut -d: -f6)
 
 MASTER_LOG="$SCRIPTS_DIR"/master_deploy.log
 SUB_SCRIPT_DIR="$SCRIPTS_DIR"/"$REPO_NAME"
@@ -21,6 +22,9 @@ chown -R "$DEV_USER" "$SUB_SCRIPT_DIR"
 
 # Function containing the logic to be run as the directory owner
 run_as_user() {
+  # Load cargo environment if it exists
+  [ -f "$HOME/.cargo/env" ] && . "$HOME/.cargo/env"
+
   # shellcheck disable=SC2164
   cd "$DEV_DIR"/"$REPO_NAME" >> "$MASTER_LOG" 2>&1
   EXIT_CODE=$?
@@ -75,7 +79,7 @@ run_as_user() {
 # Export variables so the subshell can see them, then run the function as the owner
 export REPO_NAME VERSION_TAG DEV_DIR MASTER_LOG SUB_SCRIPT_DIR
 
-sudo -u "$DEV_USER" -E HOME="/home/$DEV_USER" bash -li -c "$(declare -f run_as_user); run_as_user"
+sudo -u "$DEV_USER" -E HOME="$DEV_HOME" bash -li -c "$(declare -f run_as_user); run_as_user"
 EXIT_CODE=$?
 if [ $EXIT_CODE -ne 0 ]; then
   exit $EXIT_CODE
