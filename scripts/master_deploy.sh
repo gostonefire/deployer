@@ -15,6 +15,8 @@ DEV_USER=$(stat -c '%U' "$DEV_DIR")
 DEV_HOME=$(getent passwd "$DEV_USER" | cut -d: -f6)
 
 MASTER_LOG="$SCRIPTS_DIR"/master_deploy.log
+echo "$(date '+%Y-%m-%d %H:%M:%S') - *** Deploying $REPO_NAME with version $VERSION_TAG: ***" >> "$MASTER_LOG"
+
 SUB_SCRIPT_DIR="$SCRIPTS_DIR"/"$REPO_NAME"
 SUB_SCRIPT_LOG="$SUB_SCRIPT_DIR"/deploy.log
 mkdir -p "$SUB_SCRIPT_DIR"
