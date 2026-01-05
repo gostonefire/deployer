@@ -1,0 +1,16 @@
+[Unit]
+Description=Deployer accepting GitHub webhooks deploy actions
+After=network-online.target
+
+[Service]
+ExecStart=/bin/bash /home/petste/MyDeployer/start.sh
+WorkingDirectory=/home/petste/MyDeployer/
+StandardOutput=inherit
+StandardError=inherit
+Restart=always
+RestartSec=30
+User=root
+
+[Install]
+WantedBy=multi-user.target
+
