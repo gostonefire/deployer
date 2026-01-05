@@ -82,7 +82,7 @@ pub async fn github_webhook(State(state): State<AppState>, headers: HeaderMap, b
     tokio::spawn(run_deploy(
         state.deploy_script_path,
         state.dev_dir,
-        state.script_log,
+        state.script_log_dir,
         payload.repository.full_name,
         tag.clone(),
         state.mail.clone()));

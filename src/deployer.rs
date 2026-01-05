@@ -6,10 +6,10 @@ use thiserror::Error;
 use tokio::sync::RwLock;
 use crate::manager_mail::Mail;
 
-pub async fn run_deploy(script_path: String, dev_dir: String, script_log: String, repo: String, tag: String, mail: Arc<RwLock<Mail>>) {
+pub async fn run_deploy(script_path: String, dev_dir: String, script_log_dir: String, repo: String, tag: String, mail: Arc<RwLock<Mail>>) {
     let repo_name = repo.rsplit_once('/').map(|(_, name)| name).unwrap_or(&repo);
 
-    let (subject, body) = match deploy(&script_path, &dev_dir, &script_log, repo_name, &tag).await {
+    let (subject, body) = match deploy(&script_path, &dev_dir, &script_log_dir, repo_name, &tag).await {
         Ok(result) =>
             (
                 "Deploy successful".to_string(),
@@ -27,7 +27,7 @@ pub async fn run_deploy(script_path: String, dev_dir: String, script_log: String
 }
 
 
-async fn deploy(script_path: &str, dev_dir: &str, script_log: &str, repo_name: &str, tag: &str) -> Result<String, DeployError> {
+async fn deploy(script_path: &str, dev_dir: &str, script_log_dir: &str, repo_name: &str, tag: &str) -> Result<String, DeployError> {
     // If you want a simple concurrency guard:
     // use `flock` (recommended on Linux) by invoking it here.
     //
@@ -40,7 +40,7 @@ async fn deploy(script_path: &str, dev_dir: &str, script_log: &str, repo_name: &
         .arg(repo_name)
         .arg(tag)
         .arg(dev_dir)
-        .arg(script_log)
+        .arg(script_log_dir)
         .output()
         .await?;
 
