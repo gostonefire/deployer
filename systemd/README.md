@@ -9,15 +9,15 @@ Output should be something like:
 ```
 ● mydeployer.service - Deployer accepting GitHub webhooks deploy actions
      Loaded: loaded (/lib/systemd/system/mydeployer.service; enabled; preset: enabled)
-     Active: active (running) since Thu 2025-07-31 10:22:09 CEST; 6s ago
-   Main PID: 137204 (bash)
-      Tasks: 8 (limit: 9573)
-        CPU: 360ms
+     Active: active (running) since Mon 2026-01-05 12:35:26 CET; 21s ago
+   Main PID: 888096 (bash)
+      Tasks: 7 (limit: 9568)
+        CPU: 81ms
      CGroup: /system.slice/mydeployer.service
-             ├─137204 /bin/bash /home/petste/MyDeployer/start.sh
-             └─137205 /home/petste/MyDeployer/deployer --config=/home/petste/MyDeployer/config/config.toml
+             ├─888096 /bin/bash /home/petste/MyDeployer/start.sh
+             └─888097 /home/petste/MyDeployer/deployer --config=/home/petste/MyDeployer/config/config.toml
 
-Jul 31 10:22:09 mygrid systemd[1]: Started mydeployer.service - Deployer accepting GitHub webhooks deploy actions.
+Jan 05 12:35:26 mygrid systemd[1]: Started mydeployer.service - Deployer accepting GitHub webhooks deploy actions.
 ```
 
 If the application for some reason prints anything to stdout/stderr, such in case of a panic,
