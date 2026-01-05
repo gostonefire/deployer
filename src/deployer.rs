@@ -6,6 +6,16 @@ use thiserror::Error;
 use tokio::sync::RwLock;
 use crate::manager_mail::Mail;
 
+/// Runs the deployment script and sends an email notification.
+///
+/// # Arguments
+///
+/// * 'script_path' - Path to the master deployment shell script
+/// * 'dev_dir' - Development directory in the server
+/// * 'scripts_dir' - Directory where scripts are stored
+/// * 'repo' - Full Git repository name
+/// * 'tag' - Git tag to deploy
+/// * 'mail' - Mailer instance for sending notifications
 pub async fn run_deploy(script_path: String, dev_dir: String, scripts_dir: String, repo: String, tag: String, mail: Arc<RwLock<Mail>>) {
     let repo_name = repo.rsplit_once('/').map(|(_, name)| name).unwrap_or(&repo);
 
@@ -26,7 +36,15 @@ pub async fn run_deploy(script_path: String, dev_dir: String, scripts_dir: Strin
     let _ = mail.read().await.send_mail(subject, body);
 }
 
-
+/// Executes the deployment script.
+///
+/// # Arguments
+///
+/// * 'script_path' - Path to the master deployment shell script
+/// * 'dev_dir' - Development directory in the server
+/// * 'scripts_dir' - Directory where scripts are stored
+/// * 'repo_name' - The Git repository name
+/// * 'tag' - Git tag to deploy
 async fn deploy(script_path: &str, dev_dir: &str, scripts_dir: &str, repo_name: &str, tag: &str) -> Result<String, DeployError> {
     // If you want a simple concurrency guard:
     // use `flock` (recommended on Linux) by invoking it here.

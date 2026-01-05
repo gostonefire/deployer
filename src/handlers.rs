@@ -28,6 +28,13 @@ struct Repository {
     full_name: String,
 }
 
+/// Handles GitHub webhook events for tag pushes.
+/// 
+/// # Arguments
+/// 
+/// * 'state' - Application state containing configuration and resources.
+/// * 'headers' - HTTP headers from the incoming request.
+/// * 'body' - Request body containing the webhook payload.
 pub async fn github_webhook(State(state): State<AppState>, headers: HeaderMap, body: Bytes) -> impl IntoResponse {
 
     // 1) Verify event type
@@ -90,6 +97,13 @@ pub async fn github_webhook(State(state): State<AppState>, headers: HeaderMap, b
     (StatusCode::OK, "deploy triggered").into_response()
 }
 
+/// Verifies the GitHub webhook signature.
+/// 
+/// # Arguments
+/// 
+/// * 'secret' - The webhook secret that is shared with GitHub
+/// * 'body' - The request body containing the webhook payload
+/// * 'sig_header' - The 'X-Hub-Signature-256' header from the request
 fn verify_github_signature(secret: &str, body: &[u8], sig_header: &str) -> bool {
     // GitHub format: "sha256=<hex>"
     let provided = sig_header.strip_prefix("sha256=").unwrap_or("");
