@@ -3,20 +3,21 @@
 REPO_NAME=$1
 VERSION_TAG=$2
 DEV_DIR=$3
-SCRIPT_LOG_DIR=$4
+SCRIPTS_DIR=$4
 
-if [ -z "$REPO_NAME" ] || [ -z "$VERSION_TAG" ] || [ -z "$DEV_DIR" ] || [ -z "$SCRIPT_LOG_DIR" ]; then
-  echo "Usage: $0 <repo_name> <version_tag> <dev_dir> <script_log>"
+if [ -z "$REPO_NAME" ] || [ -z "$VERSION_TAG" ] || [ -z "$DEV_DIR" ] || [ -z "$SCRIPTS_DIR" ]; then
+  echo "Usage: $0 <repo_name> <version_tag> <dev_dir> <scripts_dir>"
   exit 1
 fi
 
 # Get the owner of the DEV_DIR
 DEV_USER=$(stat -c '%U' "$DEV_DIR")
 
-MASTER_LOG="$SCRIPT_LOG_DIR"/master_deploy.log
-SUB_SCRIPT_LOG="$SCRIPT_LOG_DIR"/"$REPO_NAME"/deploy.log
-mkdir -p "$SCRIPT_LOG_DIR"/"$REPO_NAME"
-chown -R "$DEV_USER" "$SCRIPT_LOG_DIR"
+MASTER_LOG="$SCRIPTS_DIR"/master_deploy.log
+SUB_SCRIPT_DIR="$SCRIPTS_DIR"/"$REPO_NAME"
+SUB_SCRIPT_LOG="$SUB_SCRIPT_DIR"/deploy.log
+mkdir -p "$SUB_SCRIPT_DIR"
+chown -R "$DEV_USER" "$SUB_SCRIPT_DIR"
 
 # Function containing the logic to be run as the directory owner
 run_as_user() {
@@ -56,7 +57,14 @@ run_as_user() {
     exit $EXIT_CODE
   fi
 
-  chmod 755 ./scripts/deploy.sh >> "$MASTER_LOG" 2>&1
+  cp ./scripts/deploy.sh "$SUB_SCRIPT_DIR/" >> "$MASTER_LOG" 2>&1
+  EXIT_CODE=$?
+  if [ $EXIT_CODE -ne 0 ]; then
+    echo "could not copy deploy script while deploying $REPO_NAME with version $VERSION_TAG..."
+    exit $EXIT_CODE
+  fi
+
+  chmod 755 "$SUB_SCRIPT_DIR"/deploy.sh >> "$MASTER_LOG" 2>&1
   EXIT_CODE=$?
   if [ $EXIT_CODE -ne 0 ]; then
     echo "could not make repo deploy script executable while deploying $REPO_NAME with version $VERSION_TAG..."
@@ -73,7 +81,7 @@ if [ $EXIT_CODE -ne 0 ]; then
   exit $EXIT_CODE
 fi
 
-./scripts/deploy.sh "$REPO_NAME" "$DEV_DIR" "$SUB_SCRIPT_LOG" >> "$MASTER_LOG" 2>&1
+"$SUB_SCRIPT_DIR"/deploy.sh "$REPO_NAME" "$DEV_DIR" "$SUB_SCRIPT_LOG" >> "$MASTER_LOG" 2>&1
 EXIT_CODE=$?
 if [ $EXIT_CODE -ne 0 ]; then
   echo "could not run repo deploy script while deploying $REPO_NAME with version $VERSION_TAG..."

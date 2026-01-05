@@ -24,7 +24,7 @@ struct AppState {
     expected_repo_full_name: Vec<String>, // e.g. "yourorg/yourrepo"
     deploy_script_path: String,       // e.g. "/opt/deploy/master_deploy.sh"
     dev_dir: String,
-    script_log_dir: String,
+    scripts_dir: String,
 }
 
 #[tokio::main]
@@ -44,7 +44,7 @@ async fn main() -> Result<(), UnrecoverableError> {
         expected_repo_full_name: config.github.expected_repo_full_name.clone(), 
         deploy_script_path: config.github.deploy_script_path.clone(),
         dev_dir: config.general.dev_dir.clone(),
-        script_log_dir: config.general.script_log_dir.clone(),
+        scripts_dir: config.general.scripts_dir.clone(),
     };
 
     let app = Router::new()
