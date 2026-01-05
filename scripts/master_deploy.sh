@@ -16,11 +16,12 @@ DEV_HOME=$(getent passwd "$DEV_USER" | cut -d: -f6)
 
 MASTER_LOG="$SCRIPTS_DIR"/master_deploy.log
 echo "$(date '+%Y-%m-%d %H:%M:%S') - *** Deploying $REPO_NAME with version $VERSION_TAG: ***" >> "$MASTER_LOG"
+chown "$DEV_USER":"$DEV_USER" "$MASTER_LOG"
 
 SUB_SCRIPT_DIR="$SCRIPTS_DIR"/"$REPO_NAME"
 SUB_SCRIPT_LOG="$SUB_SCRIPT_DIR"/deploy.log
 mkdir -p "$SUB_SCRIPT_DIR"
-chown -R "$DEV_USER" "$SUB_SCRIPT_DIR"
+chown -R "$DEV_USER":"$DEV_USER" "$SUB_SCRIPT_DIR"
 
 # Function containing the logic to be run as the directory owner
 run_as_user() {
