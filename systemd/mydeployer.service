@@ -11,6 +11,10 @@ Restart=always
 RestartSec=30
 User=root
 
+LoadCredential=mail_smtp_user:/etc/credstore/mail_smtp_user
+LoadCredential=mail_smtp_password:/etc/credstore/mail_smtp_password
+LoadCredential=github_webhook_secret:/etc/credstore/github_webhook_secret
+
 [Install]
 WantedBy=multi-user.target
 

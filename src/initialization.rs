@@ -1,4 +1,5 @@
 use std::{env, fs};
+use std::path::PathBuf;
 use log::LevelFilter;
 use serde::Deserialize;
 use thiserror::Error;
@@ -13,7 +14,9 @@ pub struct WebServerParameters {
 
 #[derive(Deserialize)]
 pub struct MailParameters {
+    #[serde(default)]
     pub smtp_user: String,
+    #[serde(default)]
     pub smtp_password: String,
     pub smtp_endpoint: String,
     pub from: String,
@@ -22,6 +25,7 @@ pub struct MailParameters {
 
 #[derive(Deserialize)]
 pub struct GitHub {
+    #[serde(default)]
     pub webhook_secret: String,
     pub expected_repo_full_name: Vec<String>,
     pub deploy_script_path: String,
@@ -55,8 +59,11 @@ pub fn config() -> Result<(Config, Mail), InitializationError> {
         .ok_or(InitializationError::ConfigFilePathError("invalid --config=<config_path>".to_string()))?
         .1;
     
-    let config = load_config(&config_path)?;
-
+    let mut config = load_config(&config_path)?;
+    config.mail.smtp_user = read_credential("mail_smtp_user")?;
+    config.mail.smtp_password = read_credential("mail_smtp_password")?;
+    config.github.webhook_secret = read_credential("github_webhook_secret")?;
+    
     setup_logger(&config.general.log_path, config.general.log_level, config.general.log_to_stdout)?;
     
     let mail = Mail::new(&config.mail)?;
@@ -77,6 +84,20 @@ fn load_config(config_path: &str) -> Result<Config, InitializationError> {
     Ok(config)
 }
 
+/// Reads a credential from the file system supported by the credstore and
+/// given from systemd
+///
+/// # Arguments
+///
+/// * 'name' - name of the credential to read
+fn read_credential(name: &str) -> Result<String, InitializationError> {
+    let dir = env::var("CREDENTIALS_DIRECTORY")?;
+    let mut p = PathBuf::from(dir);
+    p.push(name);
+    let bytes = fs::read(p)?;
+    Ok(String::from_utf8(bytes)?.trim_end().to_string())
+}
+
 /// Error depicting errors that occur while initializing the scheduler
 ///
 #[derive(Debug, Error)]
@@ -91,4 +112,8 @@ pub enum InitializationError {
     SetupLoggerError(#[from] LoggerError),
     #[error("MailSetupError: {0}")]
     MailSetupError(#[from] MailError),
+    #[error("CredentialEnvError: {0}")]
+    CredentialEnvError(#[from] env::VarError),
+    #[error("CredentialUtf8Error: {0}")]
+    CredentialUtf8Error(#[from] std::string::FromUtf8Error),
 }
