@@ -1,6 +1,6 @@
 [package]
 name = "deployer"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2024"
 
 [dependencies]
@@ -10,7 +10,7 @@ tokio = { version = "1.48", features = ["rt-multi-thread", "process"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 lettre = "0.11"
-toml = "0.9.8"
+toml = "0.9"
 log4rs = "1.4"
 log = "0.4"
 anyhow = "1.0"

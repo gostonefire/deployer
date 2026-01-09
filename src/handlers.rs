@@ -84,6 +84,10 @@ pub async fn github_webhook(State(state): State<AppState>, headers: HeaderMap, b
 
     let tag = payload.r#ref[TAG_PREFIX.len()..].to_string();
     info!("deploy requested for repo: {} with tag: {}", payload.repository.full_name, tag);
+    let _ = state.mail.read().await.send_mail(
+        "Deploy requested".to_string(),
+        format!("deploy requested for repo: {} with tag: {}", payload.repository.full_name, tag)
+    );
 
     // 6) Run deploy script
     tokio::spawn(run_deploy(
