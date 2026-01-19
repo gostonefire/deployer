@@ -8,7 +8,7 @@ from              = "MyGridDeployer <peter.steneld@gridfire.org>"
 to                = "Peter Steneld <peter.steneld@gmail.com>"
 
 [github]
-expected_repo_full_name = ["gostonefire/mygrid_dash","gostonefire/weatherlogger","gostonefire/mygrid_scheduler","gostonefire/mygrid"]
+expected_repo_full_name = ["gostonefire/mygrid_dash","gostonefire/weatherlogger","gostonefire/mygrid_scheduler","gostonefire/mygrid","gostonefire/cloud_sync"]
 deploy_script_path      = "/home/petste/MyDeployer/scripts/master_deploy.sh"
 
 [general]
