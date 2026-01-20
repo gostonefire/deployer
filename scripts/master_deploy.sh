@@ -28,7 +28,8 @@ chown -R "$DEV_USER":"$DEV_USER" "$SUB_SCRIPT_DIR"
 
 # Function containing the logic to be run as the directory owner
 run_as_user() {
-  # Load cargo environment if it exists
+  # Load dependencies and cargo environment if it exists
+  source common.sh
   [ -f "$HOME/.cargo/env" ] && . "$HOME/.cargo/env"
 
   run_cmd "cd $DEV_DIR/$REPO_NAME"                  "$MASTER_LOG" "could not change directory to repo while deploying $REPO_NAME with version $VERSION_TAG..."
